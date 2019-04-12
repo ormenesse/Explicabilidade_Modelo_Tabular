@@ -7,7 +7,6 @@ from sklearn.metrics import pairwise_distances
 from sklearn.metrics import silhouette_score
 from sklearn.utils import check_random_state
 from tqdm import tqdm
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
