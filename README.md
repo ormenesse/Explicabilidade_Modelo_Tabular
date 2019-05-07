@@ -1,4 +1,5 @@
-# Explicabilidade_Modelo_Tabular - Toranja Tabular.
+# Toranja Tabular.
+## Explicabilidade para modelos que possuem muitas variáveis missings/NaN's;
 
 Projeto realizado por mim, onde eu tento traduzir o Lime de uma maneira produtiva. 
 Muitas vezes, o Lime não atende os requisitos mínimos de interpretabilidade de modelos, deste modo, reescrevi o método para aceitar modelos que trabalham com variáveis missings(analisando se são de fato relevantes ou não) além de clusterizar os resultados de forma produtiva. 
