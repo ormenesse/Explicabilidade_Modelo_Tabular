@@ -12,9 +12,7 @@ import numpy as np
 import pandas as pd
 import random
 import seaborn as sns
-import numba
-from numba import jit
-from numba import vectorize
+import lightgbm as lgb
 
 class toranja(object):
     
@@ -27,6 +25,8 @@ class toranja(object):
           random_number: número que será utilizado em algoritmos pseudo aleatórios
        Returns:
            Arquivo planilha Excel com dados consolidados.
+           Apenas os coeficientes da regressão.
+           Função clusterizada para fácil interpretabilidade de modelos.
         Author:
            Vinícius Ormenesse
     """
@@ -46,6 +46,8 @@ class toranja(object):
         self.colunas_missing = []
         self.norm_kmeans = {}
         self.kmeans = None
+        #Ajustar modelo de árvore para que método fique mais produtivo
+        self.tree_model_kmeans = None 
         self.pd_exp = pd.DataFrame([])
 
     def __min_max_norm(self,X,categorical_columns):
@@ -115,6 +117,10 @@ class toranja(object):
     def kernel(self,d, kernel_width):
         return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
     
+    """
+        Regressão - Função interna
+        No caso, esse método funciona tanto para explicabilidade de classificação como explicabilidade de regressão.
+    """
     def __return_best_coefficients(self,value,n_samples):
         data, inverse = self.__data_inverse(value,self.colunas,n_samples)
         #voltando os valores para que eu possa encontrar suas respectivas probabilidades de classe
@@ -130,7 +136,7 @@ class toranja(object):
         #colocando os misssing em seus respectivos lugares
         for col in self.colunas_missing:
             data_df[col+'_NAN'] = 0
-            data_df[col+'_NAN'][data_df[col].isnull()] = 1
+            data_df[col+'_NAN'][inv_df[col].isnull()] = 1
         #eu tenho que assinalar o nan para algum número
         data_df.fillna(0,inplace=True)
         #predizendo os resultados
@@ -171,11 +177,12 @@ class toranja(object):
         print('Initializing Cluster Interpretable Model-agnostic Explanations...')
         #amostrando a base
         x_samples = X.sample(frac=sample_base)
-        x_samples.replace([np.nan],[np.nan],inplace=True)
+        x_samples.replace([np.nan,np.NAN,np.NaN],[np.nan,np.nan,np.nan],inplace=True)
         #colocando coluna missing nas amostras
-        for col in self.missings_counts.index:
-            if self.missings_counts.loc[col] >= missing_perc:
-                self.colunas_missing.append(col)
+        if self.colunas_missing == []:
+            for col in self.missings_counts.index:
+                if self.missings_counts.loc[col] >= missing_perc:
+                    self.colunas_missing.append(col)
         #trabalhando com análise de cada amostra.
         for i in tqdm(range(0,x_samples.shape[0])):
             if i == 0:
@@ -202,7 +209,10 @@ class toranja(object):
         #salvando
         self.norm_kmeans = norm
         #colocando a probabilidade junto a tabela.
+        """
+        #antes eu tinha pensado em trabalhar com clusterização conjunta, mas agora eu não acho que valha a pena.
         exp1 = pd.concat([exp1,probs['Prob_1']],axis=1)
+        """
         exp1 = exp1.fillna(0)
         self.pd_exp = exp1
         #Clusterizando
@@ -259,13 +269,19 @@ class toranja(object):
         #ENCONTRANDO K-ÓTIMO
         print('Gerando agrupamento final:')
         k_otimo = 0
-        k_otimo = int(input("Escolha o número de k's para clusterização: "))
+        k_otimo = int(input("Escolha o número de k's para agrupamento: "))
         #
+        print('Agrupando as variáveis:')
         kmeans = KMeans(n_clusters=k_otimo,random_state=np.random.randint(1, 1000 + 1),n_init=20).fit(exp1)
         #Salvando Kmeans
         self.kmeans = kmeans
         temp = exp1.copy()
         temp['cluster'] = pd.DataFrame(kmeans.predict(exp1.values))
+        #
+        #Criando modelo de árvore
+        print('Criando Modelo de Árvore')
+        self.__generate_tree_model(x_samples,temp['cluster'])
+        #
         #desnormalizando os cluster centers
         clusters_kmeans = pd.DataFrame(kmeans.cluster_centers_,columns=exp1.columns)
         #desnormalizando nossas variáveis
@@ -342,6 +358,8 @@ class toranja(object):
         plt.close()
         temp.fillna(0,inplace=True)
         self.temp = temp
+        #Tratando o problema abaixo:
+        temp = pd.concat([temp,probs['Prob_1']],axis=1)
         #colocando os clusters na média
         for cluster in range(0,k_otimo):
             pd.DataFrame(clusters_kmeans.iloc[cluster]).transpose().to_excel(writer,"Grupo_"+str(cluster))
@@ -396,7 +414,63 @@ class toranja(object):
         print('Salvando a análise em: '+nome_arquivo+'.xlsx.')
         print('Por favor, salve esta classe em pickle.')
         writer.save()
-        
-    def estimate_group(self):
-        print('To be implemented')
-        return None
+    
+    """
+        Criando Modelo Simples para rápida interpretabilidade
+    """
+    def __generate_tree_model(self,X,y):
+        tree = lgb.LGBMClassifier(metric='auc',random_state=42,n_estimators=150,learning_rate=0.01,num_leaves=10)
+        tree.fit(X,y,eval_metric='auc',verbose=0,categorical_feature=self.categorical_features)
+        self.tree_model_kmeans = tree
+    
+    """
+        Função desenvolvida para caso usuário queira apenas explicar uma amostra.
+    """
+    def explain_alone(self,value,missing_perc=0.20,n_samples=200):
+        """
+            Returns: Pandas DataFrame com explicações
+        """
+        #Começando código de amostragem única
+        assert missing_perc <= 1 and missing_perc >= 0, 'Valor missing_perc deve estar entre 0 e 1.'
+        print('Initializing Cluster Interpretable Model-agnostic Explanations...')
+        #amostrando a base
+        value.replace([np.nan,np.NAN,np.NaN],[np.nan,np.nan,np.nan],inplace=True)
+        #colocando coluna missing nas amostras
+        if self.colunas_missing == []:
+            for col in self.missings_counts.index:
+                if self.missings_counts.loc[col] >= missing_perc:
+                    self.colunas_missing.append(col)
+        #trabalhando com análise de cada amostra.
+        colsmis = []
+        for cols in self.colunas_missing:
+            colsmis.append(cols+'_nan')
+        colunas_exp1 = self.colunas+colsmis
+        #próprio algoritmo trata os missings para mim.
+        explanations = self.__return_best_coefficients(value.values,n_samples)
+        #colocando tudo num dataframe para facilitar.
+        exp1 = pd.DataFrame(explanations,index=colunas_exp1).transpose()
+        #plotando gráfico de explicabilidade:
+        fig = fig = plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
+        names = list(exp1.transpose().abs().sort_values(by=0,ascending=False).index)
+        vals = list(exp1[names].values[0])
+        names.reverse();vals.reverse()
+        colors = ['green' if x > 0 else 'red' for x in vals]
+        pos = np.arange(len(vals)) + .5
+        plt.barh(pos, vals, align='center', color=colors)
+        plt.yticks(pos, names)
+        title = 'Explicação local para amostra'
+        plt.title(title)
+        plt.show()
+        display(exp1)
+        return exp1
+    
+    """
+        Estimativa rápida de grupo de interpretabilidade.
+        Esse método deverá ser utilizado com a classe sava em pickle ou até mesmo com toda explicabilidade ainda em memória.
+    """
+    def estimate_group(self,values):
+        """
+            Returns: Vector with cluster predictions
+        """
+        assert self.tree_model_kmeans != None, 'Você deve primeiro, rodar modelo de interpretabilidade completo antes de tentar predizer um grupo.'
+        return self.tree_model_kmeans.predict(values)
