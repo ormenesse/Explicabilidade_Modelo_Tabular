@@ -362,40 +362,41 @@ class toranja(object):
         temp = pd.concat([temp,probs['Prob_1']],axis=1)
         #colocando os clusters na média
         for cluster in range(0,k_otimo):
+            cell_format = writer.book.add_format({'bold': True})
             pd.DataFrame(clusters_kmeans.iloc[cluster]).transpose().to_excel(writer,"Grupo_"+str(cluster))
             #
             worksheet = writer.sheets["Grupo_"+str(cluster)]
             #
-            worksheet.write_rich_string(3,0,bold,'Média Score')
+            worksheet.write(3,0,'Média Score',cell_format)
             worksheet.write(3,1,temp['Prob_1'][temp['cluster'] == cluster].mean())
             #
-            worksheet.write_rich_string(4,0,bold,'Desvpad')
+            worksheet.write(4,0,'Desvpad',cell_format)
             worksheet.write(4,1,str(temp['Prob_1'][temp['cluster'] == cluster].std()))
             #
-            worksheet.write_rich_string(5,0,bold,'Score Máx./Mín.')
+            worksheet.write(5,0,'Score Máx./Mín.',cell_format)
             worksheet.write(5,1,temp['Prob_1'][temp['cluster'] == cluster].max())
             worksheet.write(5,2,temp['Prob_1'][temp['cluster'] == cluster].min())
             #
-            worksheet.write_rich_string(6,0,bold,'Representação Pop.')
+            worksheet.write(6,0,'Representação Pop.',cell_format)
             worksheet.write(6,1,temp['Prob_1'][temp['cluster'] == cluster].count()/temp.shape[0])
             #EXPLICACAO MÉDIA DO CLUSTER
-            worksheet.write_rich_string(8,0,bold,'Explicação Escore Por Variável do Grupo')
+            worksheet.write(8,0,'Explicação Escore Por Variável do Grupo',cell_format)
             linha = 9 #Onde começo a escrever.
             var_indices = clusters_kmeans.iloc[cluster].abs().sort_values(ascending=False).index
             for i,indice in enumerate(clusters_kmeans.iloc[cluster].abs().sort_values(ascending=False)):
                 if var_indices[i] != 'Prob_1':
                     if clusters_kmeans[var_indices[i]].iloc[cluster] < 0:
-                        worksheet.write_rich_string(linha,0,bold,str(var_indices[i]))
+                        worksheet.write(linha,0,str(var_indices[i]),cell_format)
                         worksheet.write(linha,1,'Ajuda a diminuir a probabilidade de saída do modelo.')
                     elif clusters_kmeans[var_indices[i]].iloc[cluster] == 0:
-                        worksheet.write_rich_string(linha,0,bold,str(var_indices[i]))
+                        worksheet.write(linha,0,str(var_indices[i]),cell_format)
                         worksheet.write(linha,1,'Não ajuda na probabilidade de saída do modelo.')
                     else:
-                        worksheet.write_rich_string(linha,0,bold,str(var_indices[i]))
+                        worksheet.write(linha,0,str(var_indices[i]),cell_format)
                         worksheet.write(linha,1,'Ajuda a aumentar a probabilidade de saída do modelo.')
                 linha += 1
             # GRÁFICO COM EXPLICAÇÃO GLOBAL DO GRUPO DE EXPLICABILIDADE
-            fig = fig = plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
+            fig = plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
             names = list(clusters_kmeans.loc[:, clusters_kmeans.columns != 'Prob_1'].iloc[cluster].abs().sort_values(ascending=False).index)
             vals = list(clusters_kmeans[names].loc[:, clusters_kmeans.columns != 'Prob_1'].iloc[cluster].values)
             names.reverse();vals.reverse()
@@ -450,12 +451,12 @@ class toranja(object):
         #colocando tudo num dataframe para facilitar.
         exp1 = pd.DataFrame(explanations,index=colunas_exp1).transpose()
         #plotando gráfico de explicabilidade:
-        fig = fig = plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
         names = list(exp1.transpose().abs().sort_values(by=0,ascending=False).index)
         vals = list(exp1[names].values[0])
         names.reverse();vals.reverse()
         colors = ['green' if x > 0 else 'red' for x in vals]
         pos = np.arange(len(vals)) + .5
+        plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
         plt.barh(pos, vals, align='center', color=colors)
         plt.yticks(pos, names)
         title = 'Explicação local para amostra'
