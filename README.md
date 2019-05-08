@@ -1,10 +1,10 @@
 # Toranja Tabular
-## Explicabilidade para modelos que possuem muitas variáveis explicativas Missings.
+## Explicabilidade para modelos que possuem muitas variáveis explicativas (Missings).
 
-O [Lime](https://github.com/marcotcr/lime) em sua essência é um excelente método para explicar modelos não lineares de forma simples e rápida, porém, é muito comum encontrar em bases produtivas, variáveis explicativas que contenham valores ausentes, chamados de **Missings**. Nestes valores ausentes, muitas vezes, pode-se encontrar informações discriminantes valiosas, quando utilizadas em nossos modelos, e portanto, estes valores normalmente não são tratados de alguma maneira especial ao serem modeladas, principalmente utilizando as mais novas ferramentas de boosting, como LightGBM ou CatBoost.
-Infelizmente, ao utilizar o Lime, deve-se obrigatoriamente substituir todas os valores das variáveis **Missings** por algum número real, fazendo com que parte da explicabilida do modelo seja perdida, principalmente caso o valor **Missing** tenha algum valor altamente discriminativo em nossa base. Desta forma, neste projeto é apresentado o **Toranja Tabular**, uma revisão do Lime onde pode-se analisar modelos tenham como entrada essas variáveis sem que haja perda da explicabilidade do modelo. Nele, a explicabilidade dos **Missings** é mostrada em uma coluna apartada, para que possa ser devidamente analisado em cada caso.
+O [Lime](https://github.com/marcotcr/lime) em sua essência é um excelente método para explicar modelos não lineares de forma simples e rápida, porém, é muito comum encontrar em bases produtivas, variáveis explicativas que contenham valores ausentes, chamados de **Missings**. Nestes valores ausentes, muitas vezes, pode-se encontrar informações discriminantes valiosas, quando utilizadas em nossos modelos, e portanto, quando modelados estes valores normalmente não são tratados de alguma maneira especial, principalmente utilizando as mais novas ferramentas de boosting, como LightGBM ou CatBoost.
+Infelizmente, ao utilizar o Lime, é obrigatória a substituição de todos os valores das variáveis **Missings** por algum número real, fazendo com que parte da explicabilidade do modelo seja perdida, principalmente caso o valor **Missing** tenha algum valor altamente discriminativo na base. Desta forma, o **Toranja Tabular** é uma revisão do Lime, onde pode-se analisar modelos que tenham como entrada essas variáveis (explicativas) sem que haja perda da explicabilidade do modelo. Nele, a explicabilidade dos **Missings** é mostrada em uma coluna apartada, o que permite a devida análise individual dos casos.
 
-Para utilizar a simples análise de explicabilidade deve-se seguir os seguintes passos:
+Para utilizar uma simples análise de explicabilidade, como no Lime, deve-se seguir os seguintes passos:
 
 ```sh
 from toranja import toranja
