@@ -22,4 +22,4 @@ _  = tor.explain_alone(escora[colunas_variaveis].iloc[20])
 ```
 Como resposta teremos algo como:
 
-![alt text](https://github.com/ormenesse/Explicabilidade_Modelo_Tabular/tree/master/imagens/explicabilidade_simples.PNG)
+![explicabilidade_simples](imagens/explicabilidade_simples.PNG)
