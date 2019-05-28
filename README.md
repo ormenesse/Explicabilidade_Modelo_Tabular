@@ -18,7 +18,7 @@ tor = toranja(df_desenvolvimento,modelo,cat_cols=[0,1,4,5])
 Para a simples explicabilidade de uma amostra, devemos fazer o seguinte:
 
 ```sh
-_  = tor.explain_alone(escora[colunas_variaveis].iloc[20])
+_  = tor.explain_alone(df_desenvolvimento.iloc[20])
 ```
 Como resposta teremos algo como:
 
@@ -31,7 +31,7 @@ Nota-se, no exemplo acima, que o **Toranja Tabular** cria um novo valor terminad
 É comum que uma análise completa de um modelo demore em geral muitas horas, e caso análises precisem ser feita recorrentemente, é comum que não se tenha uma resposta de prontidão. Deste modo, **Toranja** fornece, com técnicas de agrupamentos de explicabilidade, uma forma simples de se analisar um a possível explicação da resposta do modelo sem que se tenha toda a análise terminada. O agrupamento fará parte da classe criada para explicabilidade do modelo e um relatório em Excel será emitido:
 
 ```sh
-tor.tabular_analysis(escora[colunas_variaveis],sample_base=1)
+tor.tabular_analysis(df_desenvolvimento,sample_base=1)
 ```
 Nas figuras abaixos podemos observar como ficariam a análise de explicabilidade:
 
