@@ -25,3 +25,16 @@ Como resposta teremos algo como:
 ![explicabilidade_simples](imagens/explicabilidade_simples.PNG)
 
 Nota-se, no exemplo acima, que o **Toranja Tabular** cria um novo valor terminado em **'_nan'** caso os **Missings** das variáveis explicativas tenham alta discriminação.
+
+## Criação de Grupos de Explicabilidade
+
+É comum que uma análise completa de um modelo demore em geral muitas horas, e caso análises precisem ser feita recorrentemente, é comum que não se tenha uma resposta de prontidão. Deste modo, **Toranja** fornece, com técnicas de agrupamentos de explicabilidade, uma forma simples de se analisar um a possível explicação da resposta do modelo sem que se tenha toda a análise terminada. O agrupamento fará parte da classe criada para explicabilidade do modelo e um relatório em Excel será emitido:
+
+```sh
+tor.tabular_analysis(escora[colunas_variaveis],sample_base=1)
+```
+Nas figuras abaixos podemos observar como ficariam a análise de explicabilidade:
+
+![grupogeral](imagens/groups_general.jpg)
+
+![grupo1](imagens/group1.jpg)
