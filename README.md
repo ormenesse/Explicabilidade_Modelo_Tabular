@@ -37,4 +37,4 @@ Nas figuras abaixos podemos observar como ficariam a análise de explicabilidade
 
 ![grupogeral](imagens/groups_general.jpg)
 
-![grupo1](imagens/group1.jpg)
+![grupo1](imagens/group1.JPG)
