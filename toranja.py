@@ -13,6 +13,8 @@ import pandas as pd
 import random
 import seaborn as sns
 import lightgbm as lgb
+#for jupyter, important
+from IPython.core.display import display, HTML
 
 class toranja(object):
     
