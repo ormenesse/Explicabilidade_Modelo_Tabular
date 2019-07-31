@@ -49,6 +49,8 @@ class toranja(object):
         #Ajustar modelo de árvore para que método fique mais produtivo
         self.tree_model_kmeans = None 
         self.pd_exp = pd.DataFrame([])
+		#Correspondencia de cluster para cada linha de amostra utilizada no desenvolvimento
+		self.clusterization = None
 
     def __min_max_norm(self,X,categorical_columns):
         norm = {}
@@ -177,6 +179,7 @@ class toranja(object):
         print('Initializing Cluster Interpretable Model-agnostic Explanations...')
         #amostrando a base
         x_samples = X.sample(frac=sample_base)
+		x_samples_index = x_samples.index
         x_samples.replace([np.nan,np.NAN,np.NaN],[np.nan,np.nan,np.nan],inplace=True)
         #colocando coluna missing nas amostras
         if self.colunas_missing == []:
@@ -234,7 +237,10 @@ class toranja(object):
                     Ws.append(temp_j.shape[0]*var_j)
             #teste silhueta
             indices = exp1.sample(frac=0.15).index
-            sil_coeff.append(silhouette_score(exp1.iloc[indices], temp['cluster'].iloc[indices], metric='euclidean'))
+			try:
+				sil_coeff.append(silhouette_score(exp1.iloc[indices], temp['cluster'].iloc[indices], metric='euclidean'))
+			except:
+				sil_coeff.append(0)
             #print("For n_clusters={}, The Silhouette Coefficient is {}".format(k, sil_coeff[len(sil_coeff)-1]))
             #outro teste
             W=np.sum(Ws,axis=0)
@@ -249,19 +255,19 @@ class toranja(object):
         plt.plot(K, distortions, 'bx-')
         plt.xlabel('k')
         plt.ylabel('Método Within')
-        plt.title('Método cotovelo para k ótimo')
+        plt.title('Método cotovelo para k ótimo - Within')
         plt.show()
         #
         plt.plot(K, dists, 'bx-')
         plt.xlabel('k')
         plt.ylabel('Método erro distância euclidiana mínima')
-        plt.title('Método cotovelo para k ótimo')
+        plt.title('Método cotovelo para k ótimo - Euclidiana')
         plt.show()
         #
         plt.plot(K, sil_coeff, 'bx-')
         plt.xlabel('k')
         plt.ylabel('Método Silhueta')
-        plt.title('Método cotovelo para k ótimo')
+        plt.title('Método cotovelo para k ótimo - Euclidiana - Silhueta')
         plt.show()
         #FIM DE CLUSTERIZACAO
         #ENCONTRANDO K-ÓTIMO
@@ -280,6 +286,8 @@ class toranja(object):
         #
         #Criando modelo de árvore
         print('Criando Modelo de Árvore')
+		#armazenando variaveia de clusterizacao para uso fututo
+		self.clusterization = pd.concat([pd.DataFrame(list(x_samples_index),columns=['Index']),temp['cluster']].reset_index(drop=True),axis=1)
         self.__generate_tree_model(x_samples,temp['cluster'])
         #
         #desnormalizando os cluster centers
@@ -420,8 +428,8 @@ class toranja(object):
         Criando Modelo Simples para rápida interpretabilidade
     """
     def __generate_tree_model(self,X,y):
-        tree = lgb.LGBMClassifier(metric='auc',random_state=42,n_estimators=150,learning_rate=0.01,num_leaves=10)
-        tree.fit(X,y,eval_metric='auc',verbose=0,categorical_feature=self.categorical_features)
+        tree = lgb.LGBMClassifier(random_state=42,n_estimators=300,learning_rate=0.01,num_leaves=10)
+        tree.fit(X,y,verbose=0,categorical_feature=self.categorical_features)
         self.tree_model_kmeans = tree
     
     """
