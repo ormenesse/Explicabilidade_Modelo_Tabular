@@ -1,3 +1,10 @@
+__author__ = "Vinicius Ormenesse"
+__license__ = "GPL"
+__version__ = "1.0.1"
+__maintainer__ = "Vinicius Ormenesse"
+__email__ = "vinicius.ormenesse@gmail.com"
+__status__ = "Devellopment"
+
 from io import BytesIO
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
@@ -305,7 +312,7 @@ class toranja(object):
         print('Colocando todas as análises em uma planilha')
         writer = pd.ExcelWriter(nome_arquivo+'.xlsx', engine='xlsxwriter')
         bold = writer.book.add_format({'bold':True})
-        analise_grupos = pd.concat([pd.Series(np.arange(2,20),name='K'),pd.Series(distortions,name='Within'),pd.Series(dists,name='Euclidiana'),pd.Series(sil_coeff,name='Silhueta')],axis=1)
+        analise_grupos = pd.concat([pd.Series(np.arange(2,n_clusters+1),name='K'),pd.Series(distortions,name='Within'),pd.Series(dists,name='Euclidiana'),pd.Series(sil_coeff,name='Silhueta')],axis=1)
         analise_grupos.to_excel(writer,'Análise_Grupos')
         worksheet = writer.sheets['Análise_Grupos']
         row = 0
