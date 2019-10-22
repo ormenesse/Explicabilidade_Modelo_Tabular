@@ -3,7 +3,7 @@ __license__ = "GPL"
 __version__ = "1.0.1"
 __maintainer__ = "Vinicius Ormenesse"
 __email__ = "vinicius.ormenesse@gmail.com"
-__status__ = "Devellopment"
+__status__ = "Done"
 
 from io import BytesIO
 from scipy.spatial import distance
