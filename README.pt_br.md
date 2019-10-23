@@ -1,4 +1,4 @@
-# Toranja Tabular
+# Toranja Tabular - Tabular GrapeFruit
 ## Explicabilidade para modelos que possuem muitas variáveis explicativas com valores ausentes (Missings).
 
 O [Lime](https://github.com/marcotcr/lime) em sua essência é um excelente método para explicar modelos não lineares de forma simples e rápida, porém, é muito comum encontrar em bases produtivas, variáveis explicativas que contenham valores ausentes, chamados de **Missings**. Nestes valores ausentes, muitas vezes, pode-se encontrar informações discriminantes valiosas, quando utilizadas em nossos modelos, e portanto, quando modelados estes valores normalmente não são tratados de alguma maneira especial, principalmente utilizando as mais novas ferramentas de boosting, como LightGBM ou CatBoost.
