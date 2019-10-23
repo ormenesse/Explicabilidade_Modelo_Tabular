@@ -1,9 +1,9 @@
-#  Tabular GrapeFruit - [Toranja Tabular] (https://github.com/ormenesse/Explicabilidade_Modelo_Tabular/blob/master/README.pt_br.md)
+#  Tabular GrapeFruit - [Toranja Tabular](https://github.com/ormenesse/Explicabilidade_Modelo_Tabular/blob/master/README.pt_br.md)
 ## Explanability for models that have many explanatory variables with missing values.
 
 
 
-[Lime] (https://github.com/marcotcr/lime) is in its essence an excellent method for explaining nonlinear models simply and quickly, but it is very common to find in productive bases explanatory variables containing **Missings** values. These missing values, can often discriminate information valuable information when used in machine learning models, and therefore when modeled these values are usually not handled in any special way, especially using the latest boosting tools such as LightGBM or CatBoost.
+[Lime](https://github.com/marcotcr/lime) is in its essence an excellent method for explaining nonlinear models simply and quickly, but it is very common to find in productive bases explanatory variables containing **Missings** values. These missing values, can often discriminate information valuable information when used in machine learning models, and therefore when modeled these values are usually not handled in any special way, especially using the latest boosting tools such as LightGBM or CatBoost.
 Unfortunately, when using Lime, it is mandatory to replace all **Missings** values with some real number (zero, average, median, etc.), causing some of the model's explainability to be lost, especially if the **Missing** value has some valuable information in it. Thus, the **Tabular Grapefruit** is a Lime revision, where it is possible to analyze models that have as input these (explanatory) variables without losing the explicability of the model. In it, the explainability of the **Missings** is shown in a separate column, which allows for proper individual analysis of the cases.
 
 To use a simple explicability analysis, as in Lime, follow these steps:
