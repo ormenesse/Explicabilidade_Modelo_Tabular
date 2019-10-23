@@ -6,18 +6,18 @@ Infelizmente, ao utilizar o Lime, é obrigatória a substituição de todos os v
 
 Para utilizar uma simples análise de explicabilidade, como no Lime, deve-se seguir os seguintes passos:
 
-```sh
+```python
 from toranja import toranja
 ```
 A seguir, deve-se colocar a base utilizada no desenvolvimento do modelo (com apenas as colunas que serão utilizadas na escoragem), o modelo(apenas funciona para modelos que possuam a função **predict_proba**), e as colunas categóricas, como índices, utilizadas no modelo (caso o modelo não tenha sido desenvolvido com Dummies/One Hot).
 
-```sh
+```python
 tor = toranja(df_desenvolvimento,modelo,cat_cols=[0,1,4,5])
 ```
 
 Para a simples explicabilidade de uma amostra, devemos fazer o seguinte:
 
-```sh
+```python
 _  = tor.explain_alone(df_desenvolvimento.iloc[20])
 ```
 Como resposta teremos algo como:
@@ -30,7 +30,7 @@ Nota-se, no exemplo acima, que o **Toranja Tabular** cria um novo valor terminad
 
 É comum que uma análise completa de um modelo demore em geral muitas horas, e caso análises precisem ser feita recorrentemente, é comum que não se tenha uma resposta de prontidão. Deste modo, **Toranja** fornece, com técnicas de agrupamentos de explicabilidade, uma forma simples de se analisar um a possível explicação da resposta do modelo sem que se tenha toda a análise terminada. O agrupamento fará parte da classe criada para explicabilidade do modelo e um relatório em Excel será emitido:
 
-```sh
+```python
 tor.tabular_analysis(df_desenvolvimento,sample_base=1)
 ```
 Nas figuras abaixos podemos observar como ficariam a análise de explicabilidade:
