@@ -1,6 +1,6 @@
 __author__ = "Vinicius Ormenesse"
 __license__ = "GPL"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __maintainer__ = "Vinicius Ormenesse"
 __email__ = "vinicius.ormenesse@gmail.com"
 __status__ = "Done"
@@ -59,7 +59,7 @@ class toranja(object):
         self.tree_model_kmeans = None 
         self.pd_exp = pd.DataFrame([])
 		#Correspondencia de cluster para cada linha de amostra utilizada no desenvolvimento
-		self.clusterization = None
+        self.clusterization = None
 
     def __min_max_norm(self,X,categorical_columns):
         norm = {}
@@ -188,7 +188,7 @@ class toranja(object):
         print('Initializing Cluster Interpretable Model-agnostic Explanations...')
         #amostrando a base
         x_samples = X.sample(frac=sample_base)
-		x_samples_index = x_samples.index
+        x_samples_index = x_samples.index
         x_samples.replace([np.nan,np.NAN,np.NaN],[np.nan,np.nan,np.nan],inplace=True)
         #colocando coluna missing nas amostras
         if self.colunas_missing == []:
@@ -224,6 +224,8 @@ class toranja(object):
         """
         #antes eu tinha pensado em trabalhar com clusterização conjunta, mas agora eu não acho que valha a pena.
         exp1 = pd.concat([exp1,probs['Prob_1']],axis=1)
+        
+        
         """
         exp1 = exp1.fillna(0)
         self.pd_exp = exp1
@@ -246,10 +248,10 @@ class toranja(object):
                     Ws.append(temp_j.shape[0]*var_j)
             #teste silhueta
             indices = exp1.sample(frac=0.15).index
-			try:
-				sil_coeff.append(silhouette_score(exp1.iloc[indices], temp['cluster'].iloc[indices], metric='euclidean'))
-			except:
-				sil_coeff.append(0)
+            try:
+                sil_coeff.append(silhouette_score(exp1.iloc[indices], temp['cluster'].iloc[indices], metric='euclidean'))
+            except:
+                sil_coeff.append(0)
             #print("For n_clusters={}, The Silhouette Coefficient is {}".format(k, sil_coeff[len(sil_coeff)-1]))
             #outro teste
             W=np.sum(Ws,axis=0)
@@ -296,7 +298,7 @@ class toranja(object):
         #Criando modelo de árvore
         print('Criando Modelo de Árvore')
 		#armazenando variaveia de clusterizacao para uso fututo
-		self.clusterization = pd.concat([pd.DataFrame(list(x_samples_index),columns=['Index']),temp['cluster']].reset_index(drop=True),axis=1)
+        self.clusterization = pd.concat([pd.DataFrame(list(x_samples_index),columns=['Index']),temp['cluster'].reset_index(drop=True)],axis=1)
         self.__generate_tree_model(x_samples,temp['cluster'])
         #
         #desnormalizando os cluster centers
@@ -387,7 +389,7 @@ class toranja(object):
             worksheet.write(3,0,'Média Score',cell_format)
             worksheet.write(3,1,temp['Prob_1'][temp['cluster'] == cluster].mean())
             #
-            worksheet.write(4,0,'Desvpad',cell_format)
+            worksheet.write(4,0,'Std',cell_format)
             worksheet.write(4,1,str(temp['Prob_1'][temp['cluster'] == cluster].std()))
             #
             worksheet.write(5,0,'Score Máx./Mín.',cell_format)
@@ -397,20 +399,20 @@ class toranja(object):
             worksheet.write(6,0,'Representação Pop.',cell_format)
             worksheet.write(6,1,temp['Prob_1'][temp['cluster'] == cluster].count()/temp.shape[0])
             #EXPLICACAO MÉDIA DO CLUSTER
-            worksheet.write(8,0,'Explicação Escore Por Variável do Grupo',cell_format)
+            worksheet.write(8,0,'Explanation Score by Variable Group',cell_format)
             linha = 9 #Onde começo a escrever.
             var_indices = clusters_kmeans.iloc[cluster].abs().sort_values(ascending=False).index
             for i,indice in enumerate(clusters_kmeans.iloc[cluster].abs().sort_values(ascending=False)):
                 if var_indices[i] != 'Prob_1':
                     if clusters_kmeans[var_indices[i]].iloc[cluster] < 0:
                         worksheet.write(linha,0,str(var_indices[i]),cell_format)
-                        worksheet.write(linha,1,'Ajuda a diminuir a probabilidade de saída do modelo.')
+                        worksheet.write(linha,1,'Helps decrease the probability of model output.')
                     elif clusters_kmeans[var_indices[i]].iloc[cluster] == 0:
                         worksheet.write(linha,0,str(var_indices[i]),cell_format)
-                        worksheet.write(linha,1,'Não ajuda na probabilidade de saída do modelo.')
+                        worksheet.write(linha,1,'It does not help in model exit probability.')
                     else:
                         worksheet.write(linha,0,str(var_indices[i]),cell_format)
-                        worksheet.write(linha,1,'Ajuda a aumentar a probabilidade de saída do modelo.')
+                        worksheet.write(linha,1,'Helps increase the probability of model output.')
                 linha += 1
             # GRÁFICO COM EXPLICAÇÃO GLOBAL DO GRUPO DE EXPLICABILIDADE
             fig = plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
@@ -421,7 +423,7 @@ class toranja(object):
             pos = np.arange(len(vals)) + .5
             plt.barh(pos, vals, align='center', color=colors)
             plt.yticks(pos, names)
-            title = 'Explicação local para centróide do Grupo %s' % cluster
+            title = 'Local Explanation for Group Centroid - %s' % cluster
             plt.title(title)
             imgdata = BytesIO()
             fig.savefig(imgdata, format="png",bbox_inches = 'tight',transparent=True)
@@ -429,8 +431,8 @@ class toranja(object):
             worksheet.insert_image(11, 3, "", {'image_data': imgdata})
             plt.close()
         #salvandos os dados
-        print('Salvando a análise em: '+nome_arquivo+'.xlsx.')
-        print('Por favor, salve esta classe em pickle.')
+        print('Saving Analysis as: '+nome_arquivo+'.xlsx.')
+        print('Please save this class in a pickle file.')
         writer.save()
     
     """
@@ -449,7 +451,7 @@ class toranja(object):
             Returns: Pandas DataFrame com explicações
         """
         #Começando código de amostragem única
-        assert missing_perc <= 1 and missing_perc >= 0, 'Valor missing_perc deve estar entre 0 e 1.'
+        assert missing_perc <= 1 and missing_perc >= 0, 'missing_perc value must be between 0 & 1.'
         print('Initializing Cluster Interpretable Model-agnostic Explanations...')
         #amostrando a base
         value.replace([np.nan,np.NAN,np.NaN],[np.nan,np.nan,np.nan],inplace=True)
@@ -476,7 +478,7 @@ class toranja(object):
         plt.figure(figsize=(1+int(len(colunas_exp1)*0.2401+0.8911),1+int(len(colunas_exp1)*0.2401+0.8911)))
         plt.barh(pos, vals, align='center', color=colors)
         plt.yticks(pos, names)
-        title = 'Explicação local para amostra'
+        title = 'Local sample explanation'
         plt.title(title)
         plt.show()
         display(exp1)
