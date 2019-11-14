@@ -43,7 +43,7 @@ class toranja(object):
     def __init__(self,X,modelo,cat_cols=[],random_number=4242):
         assert str(type(X)) == "<class 'pandas.core.frame.DataFrame'>", 'Por favor, inserir uma base no formato Pandas.'
         for c in cat_cols:
-            assert 'str' not in str(type(c)),'Lista de categóricas deve ser apenas com os valores dos índices das colunas.'
+            assert 'str' not in str(type(c)),'Categorical variable list (cat_cols) should contain only column index values.'
         self.colunas = list(X.columns)
         self.categorical_features = cat_cols
         self.norm = self.__min_max_norm(X,cat_cols)
@@ -183,8 +183,8 @@ class toranja(object):
             Returns:
                 Arquivo xlsx com informações dos clusters criados para interpretabilidade.
         """
-        assert missing_perc <= 1 and missing_perc >= 0, 'Valor missing_perc deve estar entre 0 e 1.'
-        assert sample_base <= 1 and sample_base >= 0, 'A variável sample_base deve ser um valor entre 0 e 1'
+        assert missing_perc <= 1 and missing_perc >= 0, '"missing_perc" Value must be set between 0 & 1.'
+        assert sample_base <= 1 and sample_base >= 0, '"sample_base" Value must be set between 0 & 1.'
         print('Initializing Cluster Interpretable Model-agnostic Explanations...')
         #amostrando a base
         x_samples = X.sample(frac=sample_base)
@@ -265,20 +265,20 @@ class toranja(object):
             dists.append(sum(np.min(cdist(exp1, kmeans_teste.cluster_centers_, 'euclidean'), axis=1)) / exp1.shape[0])
         plt.plot(K, distortions, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método Within')
-        plt.title('Método cotovelo para k ótimo - Within')
+        plt.ylabel('Within Method')
+        plt.title('Elbow Method for optimal k - Within')
         plt.show()
         #
         plt.plot(K, dists, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método erro distância euclidiana mínima')
-        plt.title('Método cotovelo para k ótimo - Euclidiana')
+        plt.ylabel('Euclidian Method')
+        plt.title('Elbow Method for optimal k - Euclidian')
         plt.show()
         #
         plt.plot(K, sil_coeff, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método Silhueta')
-        plt.title('Método cotovelo para k ótimo - Euclidiana - Silhueta')
+        plt.ylabel('Silhouette Method')
+        plt.title('Elbow Method for optimal k - Euclidian - silhouette')
         plt.show()
         #FIM DE CLUSTERIZACAO
         #ENCONTRANDO K-ÓTIMO
@@ -286,9 +286,9 @@ class toranja(object):
         #ENCONTRANDO K-ÓTIMO
         print('Gerando agrupamento final:')
         k_otimo = 0
-        k_otimo = int(input("Escolha o número de k's para agrupamento: "))
+        k_otimo = int(input("Please enter number of groups (k) desired: "))
         #
-        print('Agrupando as variáveis:')
+        print('Clustering Variables:')
         kmeans = KMeans(n_clusters=k_otimo,random_state=np.random.randint(1, 1000 + 1),n_init=20).fit(exp1)
         #Salvando Kmeans
         self.kmeans = kmeans
@@ -296,7 +296,7 @@ class toranja(object):
         temp['cluster'] = pd.DataFrame(kmeans.predict(exp1.values))
         #
         #Criando modelo de árvore
-        print('Criando Modelo de Árvore')
+        print('Creating Boosting Model')
 		#armazenando variaveia de clusterizacao para uso fututo
         self.clusterization = pd.concat([pd.DataFrame(list(x_samples_index),columns=['Index']),temp['cluster'].reset_index(drop=True)],axis=1)
         self.__generate_tree_model(x_samples,temp['cluster'])
@@ -311,7 +311,7 @@ class toranja(object):
         ####
         ####
         #Trabalhando 
-        print('Colocando todas as análises em uma planilha')
+        print('Printing analysis into a SpreadSheet...')
         writer = pd.ExcelWriter(nome_arquivo+'.xlsx', engine='xlsxwriter')
         bold = writer.book.add_format({'bold':True})
         analise_grupos = pd.concat([pd.Series(np.arange(2,n_clusters+1),name='K'),pd.Series(distortions,name='Within'),pd.Series(dists,name='Euclidiana'),pd.Series(sil_coeff,name='Silhueta')],axis=1)
@@ -331,8 +331,8 @@ class toranja(object):
         fig = plt.figure(figsize=(5,5))
         plt.plot(K, distortions, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método Within')
-        plt.title('Método cotovelo para k ótimo')
+        plt.ylabel('Within Method')
+        plt.title('Elbow Method')
         imgdata = BytesIO()
         fig.savefig(imgdata, format="png")
         imgdata.seek(0)
@@ -342,8 +342,8 @@ class toranja(object):
         fig = plt.figure(figsize=(5,5))
         plt.plot(K, dists, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método erro distância euclidiana mínima')
-        plt.title('Método cotovelo para k ótimo')
+        plt.ylabel('Euclidian Method')
+        plt.title('Elbow Method')
         imgdata = BytesIO()
         fig.savefig(imgdata, format="png")
         imgdata.seek(0)
@@ -353,8 +353,8 @@ class toranja(object):
         fig = plt.figure(figsize=(5,5))
         plt.plot(K, sil_coeff, 'bx-')
         plt.xlabel('k')
-        plt.ylabel('Método Silhueta')
-        plt.title('Método cotovelo para k ótimo')
+        plt.ylabel('Silhouette Method')
+        plt.title('Elbow Method')
         imgdata = BytesIO()
         fig.savefig(imgdata, format="png")
         imgdata.seek(0)
@@ -368,7 +368,7 @@ class toranja(object):
                 distancias[center_i][center_j] = distance.euclidean(centers[center_i], centers[center_j])
         distancias = pd.DataFrame(distancias)
         fig = plt.figure(figsize=(7,7))
-        plt.title('Diferença de distância Euclidiana entre os grupos')
+        plt.title('Distance difference between groups.')
         sns.heatmap(distancias, annot=True,cbar=False)
         imgdata = BytesIO()
         fig.savefig(imgdata, format="png")
@@ -492,5 +492,5 @@ class toranja(object):
         """
             Returns: Vector with cluster predictions
         """
-        assert self.tree_model_kmeans != None, 'Você deve primeiro, rodar modelo de interpretabilidade completo antes de tentar predizer um grupo.'
+        assert self.tree_model_kmeans != None, 'You must first create a full interpretability model before attempting to predict a group.'
         return self.tree_model_kmeans.predict(values)
